@@ -26,18 +26,23 @@ void draw()
     video.loadPixels();
     lastFrame.loadPixels();
     
+    //*** TODO: extract method PImage glitch(PImage image)
     int start1 = (int)random(w*h);
     int start2 = (int)random(w*h);
     int amount = (int)random(min(w*h, w*h - max(start1, start2)));
     
+    // TODO: play with filter(), blend() and PImage's copy().
+    // TODO: use arrayCopy(...) instead of low-level iteration
     for (int i = 0; i < amount; i++) {
+      // keep some original bytes to prevent total mess
       lastFrame.pixels[start2 + i] = video.pixels[start2 + i];
+      
+      // glitch
       lastFrame.pixels[start1 + i] = lastFrame.pixels[start1 + i] | video.pixels[start2 + i];  
     }
-
+    //***
     
     lastFrame.updatePixels();
-    filter(EXCLUSION);
     image(lastFrame, 0, 0);
   }
 }
