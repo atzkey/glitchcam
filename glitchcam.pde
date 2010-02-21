@@ -1,49 +1,48 @@
 import processing.video.*;
 
-int w = 640;
-int h = 480;
+int w = 320;
+int h = 240;
 
 int fps = 15;
 
-Capture video;
+float xoff = 0.0;
 
-PImage lastFrame;
+Capture video;
+Glitch glitch;
 
 void setup()
 {
-  size(w, h);
+  size(w*2 + 20, h*2, P2D);
   
   video = new Capture(this, w, h, fps);
-  lastFrame = new PImage(w, h);
 
+  colorMode(RGB, 255);
   background(0);
 }
 
 void draw()
 {
-  while(video.available()) {
+  if(video.available()) {
     video.read();
     video.loadPixels();
-    lastFrame.loadPixels();
+    loadPixels();
     
-    //*** TODO: extract method PImage glitch(PImage image)
-    int start1 = (int)random(w*h);
-    int start2 = (int)random(w*h);
-    int amount = (int)random(min(w*h, w*h - max(start1, start2)));
+    Glitch g = new Glitch(video);
     
-    // TODO: play with filter(), blend() and PImage's copy().
-    // TODO: use arrayCopy(...) instead of low-level iteration
-    for (int i = 0; i < amount; i++) {
-      // keep some original bytes to prevent total mess
-      lastFrame.pixels[start2 + i] = video.pixels[start2 + i];
-      
-      // glitch
-      lastFrame.pixels[start1 + i] = lastFrame.pixels[start1 + i] | video.pixels[start2 + i];  
-    }
-    //***
-    
-    lastFrame.updatePixels();
-    image(lastFrame, 0, 0);
+    g.decompose();
+
+    g._r.position = g._g.position = g._b.position = w*h/2;
+    g._r.glitch(Glitch.MESS, 4);
+    g._g.glitch(Glitch.MESS, 2);
+    g._b.glitch(Glitch.MESS, 4);
+
+    g.compose(g._r, g, g._b);
+    g.glitch(Glitch.MIX, 4);
+    //g.restore();
+    image(g, 5, 200);
+    image(video, w + 15, 200);
+    //image(video, 0, 0);
   }
 }
+
 
